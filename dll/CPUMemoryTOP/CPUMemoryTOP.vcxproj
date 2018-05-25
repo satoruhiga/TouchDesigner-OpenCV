@@ -158,7 +158,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\CPlusPlus_Common.h" />
-    <ClInclude Include="src\CPUMemoryTOP.h" />
     <ClInclude Include="src\GL_Extensions.h" />
     <ClInclude Include="src\NanomsgIO\NanomsgIO.h" />
     <ClInclude Include="src\TOP_CPlusPlusBase.h" />

@@ -12,9 +12,6 @@
     <ClInclude Include="src\CPlusPlus_Common.h">
       <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="src\CPUMemoryTOP.h">
-      <Filter>src</Filter>
-    </ClInclude>
     <ClInclude Include="src\GL_Extensions.h">
       <Filter>src</Filter>
     </ClInclude>
