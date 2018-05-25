@@ -9,6 +9,7 @@
  */
 
 #include "TOP_CPlusPlusBase.h"
+#include "NanomsgIO/NanomsgIO.h"
 
 class CPUMemoryTOP : public TOP_CPlusPlusBase
 {

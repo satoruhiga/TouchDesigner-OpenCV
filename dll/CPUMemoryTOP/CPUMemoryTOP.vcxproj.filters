@@ -4,6 +4,9 @@
     <Filter Include="src">
       <UniqueIdentifier>{8cc81029-d3b3-4cbe-89a3-579f272641bd}</UniqueIdentifier>
     </Filter>
+    <Filter Include="src\NanomsgIO">
+      <UniqueIdentifier>{dff0a9ae-2573-46a3-97cb-353a75740547}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\CPlusPlus_Common.h">
@@ -17,6 +20,9 @@
     </ClInclude>
     <ClInclude Include="src\TOP_CPlusPlusBase.h">
       <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\NanomsgIO\NanomsgIO.h">
+      <Filter>src\NanomsgIO</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
