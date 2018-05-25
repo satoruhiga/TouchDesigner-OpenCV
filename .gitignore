@@ -1,0 +1,13 @@
+#########################
+
+# TouchDesigner
+
+dll/CPUMemoryTOP/.vs/
+python/nnpy/__pycache__/
+dll/CPUMemoryTOP/Debug/
+dll/CPUMemoryTOP/Release/
+test.*.toe
+dll/NanomsgTOP/Debug/
+dll/NanomsgTOP/.vs/
+dll/NanomsgTOP/NanomsgTOP.VC.db
+dll/NanomsgTOP/Release/

@@ -33,46 +33,71 @@
 #ifndef __TOP_CPlusPlusBase__
 #define __TOP_CPlusPlusBase__
 
-#ifdef WIN32
-	#define NOMINMAX
-	#include <windows.h>
-	#include <gl/gl.h>
-	#define DLLEXPORT __declspec (dllexport)
-#else
-	#define DLLEXPORT
-#endif
-#include <cstdio>
-
 #include "CPlusPlus_Common.h"
-
-
-#define TOP_CPLUSPLUS_API_VERSION	7
 
 class TOP_CPlusPlusBase;
 class TOP_Context;
 
+enum class TOP_ExecuteMode : int32_t
+{ 
+	// Rendering is done using OpenGL into a FBO/RenderBuffers
+	// that is provided for you.
+	OpenGL_FBO = 0,
+
+
+	// *NOTE* - Do not use OpenGL calls when using a CPUMem*/CUDA executeMode.
+
+
+	// CPU memory is filled with data directly. No OpenGL calls can be
+	// made when using this mode. Doing so will likely result in
+	// rendering issues within TD.
+
+    // cpuPixelData[0] and cpupixelData[1] are width by height array of pixels. 
+    // to access pixel (x,y) you would need to offset the memory location by bytesperpixel * ( y * width + x).
+    // all pixels should be set, pixels that was not set will have an undefined value.
+
+    // "CPUMemWriteOnly" - cpuPixelData* will be provided that you fill in with pixel data. This will automatically be uploaded to the GPU as a texture for you. Reading from the memory will result in very poor performance.
+	CPUMemWriteOnly, 
+
+    // "CPUmemReadWrite - same as CPU_MEM_WRITEONLY but reading from the memory won't result in a large performance pentalty. The initial contents of the memory is undefined still.
+	CPUMemReadWrite,
+
+	// Using CUDA. Textures will be given using cudaArray*, registered with
+	// cudaGraphicsRegisterFlagsSurfaceLoadStore flag set. The output
+	// texture will be written using a provided cudaArray* as well
+	CUDA,
+};
+
+// Define for the current API version that this sample code is made for.
+// To upgrade to a newer version, replace the files
+// TOP_CPlusPlusBase.h
+// CPlusPlus_Common.h
+// from the samples folder in a newer TouchDesigner installation.
+// You may need to upgrade your plugin code in that case, to match
+// the new API requirements
+const int TOPCPlusPlusAPIVersion = 8;
+
+struct TOP_PluginInfo
+{
+	int32_t			apiVersion;
+
+	// Set this to control the execution mode for this plugin
+	// See the documention atin TOP_ExecuteMode for more information
+	TOP_ExecuteMode	executeMode;
+
+	int32_t			reserved[40];
+
+};
 
 // These are the definitions for the C-functions that are used to
 // load the library and create instances of the object you define
-typedef int (__cdecl *GETTOPAPIVERSION)(void);
+typedef TOP_PluginInfo (__cdecl *GETTOPPLUGININFO)(void);
 typedef TOP_CPlusPlusBase* (__cdecl *CREATETOPINSTANCE)(const OP_NodeInfo*,
 														TOP_Context*);
 typedef void (__cdecl *DESTROYTOPINSTANCE)(TOP_CPlusPlusBase*, TOP_Context*);
 
 // These classes are used to pass data to/from the functions you will define
 
-enum ExecuteType 
-{ 
-	// Rendering is done using OpenGL into a FBO/RenderBuffers
-	// that is provided for you
-	OPENGL_FBO = 0,
-
-	// CPU memory is filled with data directly. No OpenGL calls can be
-	// made when using this mode. Doing so will likely result in
-	// rendering issues within TD.
-	CPU_MEM_WRITEONLY = 1, 
-	CPU_MEM_READWRITE = 2 
-};
 
 
 // TouchDesigner will select the best pixel format based on the options you give
@@ -82,8 +107,8 @@ enum ExecuteType
 class TOP_OutputFormat
 {
 public:
-	int				width;
-	int				height;
+	int32_t			width;
+	int32_t			height;
 
 
 	// The aspect ratio of the TOP's output
@@ -95,9 +120,9 @@ public:
 	// The anti-alias level.
 	// 1 means no anti-alaising
 	// 2 means '2x', etc., up to 32 right now
-	// Only used when executeMode == OPENGL_FBO
+	// Only used when executeMode == TOP_ExecuteMode::OpenGL_FBO
 
-	int				antiAlias;
+	int32_t			antiAlias;
 
 
 	// Set true if you want this channel, false otherwise
@@ -114,7 +139,7 @@ public:
 	// TouchDesigner will select the closest supported number of bits based on
 	// your cards capabilities
 
-	unsigned		bitsPerChannel;
+	int32_t			bitsPerChannel;
 
 	// Set to true if you want a floating point format.
 	// Some bit precisions don't support floating point (8-bit for example)
@@ -125,28 +150,28 @@ public:
 
 	// If you want to use multiple render targets, you can set this
 	// greater than one
-	// Only used when executeMode == OPENGL_FBO
+	// Only used when executeMode == TOP_ExecuteMode::OpenGL_FBO
 
-	int				numColorBuffers;
+	int32_t			numColorBuffers;
 
 
 	// The number of bits in the depth buffer.
 	// 0 for no depth buffer
-	// Only used when executeMode == OPENGL_FBO
+	// Only used when executeMode == TOP_ExecuteMode::OpenGL_FBO
 
-	int				depthBits;
+	int32_t			depthBits;
 
 
 	// The number of bits in the stencil buffer
 	// 0 for no stencil buffer, if this is > 0 then
 	// it will also cause a depth buffer to be created
 	// even if you have depthBits == 0
-	// Only used when executeMode == OPENGL_FBO
+	// Only used when executeMode == TOP_ExecuteMode::OpenGL_FBO
 
-	int				stencilBits;
+	int32_t			stencilBits;
 
 private:
-	int				reserved[20];
+	int32_t			reserved[20];
 };
 
 
@@ -155,28 +180,29 @@ private:
 class TOP_OutputFormatSpecs
 {
 public:
-	int				width;
-	int				height;
+	int32_t			width;
+	int32_t			height;
 	float			aspectX;
 	float			aspectY;
 
-	int				antiAlias;
+	int32_t			antiAlias;
 
-    int				redBits;
-    int				blueBits;
-    int				greenBits;
-    int				alphaBits;
+    int32_t			redBits;
+    int32_t			blueBits;
+    int32_t			greenBits;
+    int32_t			alphaBits;
     bool			floatPrecision;
 
-    /*** BEGIN: OPENGL_FBO executeMode specific ***/
-	int				numColorBuffers;
+    /*** BEGIN: TOP_ExcuteMode::OpenGL_FBO and CUDA executeMode specific ***/
+	int32_t			numColorBuffers;
 
-	int				depthBits;
-	int				stencilBits;
+	int32_t			depthBits;
+	int32_t			stencilBits;
 
 
-	GLuint			reservedV5;
-    /*** END: OPENGL_FBO executeMode specific ***/
+	// The OpenGL internal format of the output texture. E.g GL_RGBA8, GL_RGBA32F
+	GLint			pixelFormat; 
+    /*** END: TOP_ExecuteMode::OpenGL_FBO and CUDA executeMode specific ***/
 
 
 
@@ -203,13 +229,13 @@ public:
     // setting this to -1 will not upload any memory and retain previously uploaded texture
     // setting this to any other value will result in an error being displayed in the CPlusPlus TOP.
     // defaults to -1
-    mutable int     newCPUPixelDataLocation;
+    mutable int32_t    newCPUPixelDataLocation;
 
     /*** END: CPU_MEM_* executeMode specific ***/
 
 
 
-	/*** BEGIN: New OPENGL_FBO execudeMode specific data ***/
+	/*** BEGIN: New TOP_ExecuteMode::OpenGL_FBO execudeMode specific data ***/
 	
 	// The first color can either be a GL_TEXTURE_2D or a GL_RENDERBUFFER
 	// depending on the settings. This will be set to either
@@ -224,10 +250,15 @@ public:
 	// This is always a GL_RENDERBUFFER GL object
 	GLuint 			depthBufferRB;
 
-    /*** END: OPENGL_FBO executeMode specific ***/
+    /*** END: TOP_ExecuteMode::OpenGL_FBO executeMode specific ***/
 
+	/*** BEGIN: TOP_ExecuteMode::CUDA specific ***/
+	// Write to this CUDA memory to fill the output textures
+	cudaArray*		cudaOutput[32];
+
+	/*** END: TOP_ExecuteMode::CUDA specific ***/
 private:
-	int				reserved[10];
+	int32_t			reserved[10];
 };
 
 class TOP_GeneralInfo
@@ -263,19 +294,10 @@ public:
 	// by default. You can use a different input by assigning a value 
 	// to inputSizeIndex.
 
-	int				inputSizeIndex;
+	int32_t			inputSizeIndex;
 
-    // executeType determines how you will update the texture
-    // "OPENGL_FBO" - you will draw directly to the FBO using OpenGL calls.
-
-	// *NOTE* - Do not use OpenGL calls when using a CPU_* executeMode.
-
-    // "CPU_MEM_WRITEONLY" - cpuPixelData* will be provided that you fill in with pixel data. This will automatically be uploaded to the GPU as a texture for you. Reading from the memory will result in very poor performance.
-    // "CPU_MEM_READWRITE" - same as CPU_MEM_WRITEONLY but reading from the memory won't result in a large performance pentalty. The initial contents of the memory is undefined still.
-    // cpuPixelData[0] and cpupixelData[1] are width by height array of pixels. 
-    // to access pixel (x,y) you would need to offset the memory location by bytesperpixel * ( y * width + x).
-    // all pixels should be set, pixels that was not set will have an undefined value.
-	ExecuteType			executeMode;
+	// Unused by current API Version, but remains for backwards compatibility
+	int32_t 		reservedForLegacy1;
 
     // determines the datatype of each pixel in CPU memory. This will determin
 	// the size of the CPU memory buffers that are given to you
@@ -285,10 +307,10 @@ public:
     // "RGBA32Float" - each pixel will hold 4 floating-point values of size 32 bits (use 'float' in the code). They will be ordered RGBA 
 	//
 	// Other cases are listed in the CPUMemPixelType enumeration
-	CPUMemPixelType		memPixelType;
+	OP_CPUMemPixelType	memPixelType;
 
 private:
-	int				reserved[18];
+	int32_t			reserved[18];
 };
 
 
@@ -301,7 +323,7 @@ class TOP_Context
 public:
 	virtual ~TOP_Context() {}
 
-	/*** BEGIN: New OPENGL_FBO execudeMode specific functions ***/
+	/*** BEGIN: New TOP_ExecuteMode::OpenGL_FBO execudeMode specific functions ***/
 
 	// This function will make a GL context that is unique to this
 	// TOP active. Call this before issuing any GL commands.
@@ -325,7 +347,17 @@ public:
 	// calls.
 	virtual GLuint	getFBOIndex() = 0;
 
-	/*** END: New OPENGL_FBO execudeMode specific functions ***/
+	/*** END: New TOP_ExecuteMode::OpenGL_FBO execudeMode specific functions ***/
+
+#ifdef WIN32
+	// This will return the device context used to create rendering contexts
+	// for this instance of TouchDesigner. In the case where GPU affinity
+	// is being used, using this to create extra contexts will ensure those
+	// contexts are affine to the correct GPU.
+	// If not null, pixelFormatOut will be filled with the pixel format
+	// index used for the DC.
+	virtual HDC		getDC(int *pixelFormatOut) const = 0;
+#endif
 };
 
 
@@ -415,7 +447,7 @@ public:
 	// Override these methods if you want to output values to the Info CHOP/DAT
 	// returning 0 means you dont plan to output any Info CHOP channels
 
-	virtual int			getNumInfoCHOPChans()
+	virtual int32_t		getNumInfoCHOPChans()
 						{
 							return 0;
 						}
@@ -424,11 +456,11 @@ public:
 	// by assigning something to 'name' and 'value' members of the
 	// OP_InfoCHOPChan class pointer that is passed (it points
 	// to a valid instance of the class already.
-	// the 'name' pointer will initially point to NULL
+	// the 'name' pointer will initially point to nullptr
 	// you must allocate memory or assign a constant string
 	// to it.
 
-	virtual void		getInfoCHOPChan(int index,
+	virtual void		getInfoCHOPChan(int32_t index,
 										OP_InfoCHOPChan* chan)
 						{
 						}
@@ -449,34 +481,34 @@ public:
 	// 'index' is the row/column index
 	// 'nEntries' is the number of entries in the row/column
 
-	virtual void		getInfoDATEntries(int index,
-											int nEntries,
+	virtual void		getInfoDATEntries(int32_t index,
+											int32_t nEntries,
 											OP_InfoDATEntries* entries)
 						{
 						}
 
 	// You can use this function to put the node into a warning state
 	// with the returned string as the message.
-	// Return NULL if you don't want it to be in a warning state.
+	// Return nullptr if you don't want it to be in a warning state.
 	virtual const char* getWarningString()
 						{
-							return NULL;
+							return nullptr;
 						}
 
 	// You can use this function to put the node into a error state
 	// with the returned string as the message.
-	// Return NULL if you don't want it to be in a error state.
+	// Return nullptr if you don't want it to be in a error state.
 	virtual const char* getErrorString()
 						{
-							return NULL;
+							return nullptr;
 						}
 
 	// Use this function to return some text that will show up in the
 	// info popup (when you middle click on a node)
-	// Return NULL if you don't want to return anything.
+	// Return nullptr if you don't want to return anything.
 	virtual const char* getInfoPopupString()
 						{
-							return NULL;
+							return nullptr;
 						}
 
 
@@ -499,23 +531,23 @@ public:
 private:
 
 	// Reserved for future features
-	virtual int		reservedFunc6() { return 0; }
-	virtual int		reservedFunc7() { return 0; }
-	virtual int		reservedFunc8() { return 0; }
-	virtual int		reservedFunc9() { return 0; }
-	virtual int		reservedFunc10() { return 0; }
-	virtual int		reservedFunc11() { return 0; }
-	virtual int		reservedFunc12() { return 0; }
-	virtual int		reservedFunc13() { return 0; }
-	virtual int		reservedFunc14() { return 0; }
-	virtual int		reservedFunc15() { return 0; }
-	virtual int		reservedFunc16() { return 0; }
-	virtual int		reservedFunc17() { return 0; }
-	virtual int		reservedFunc18() { return 0; }
-	virtual int		reservedFunc19() { return 0; }
-	virtual int		reservedFunc20() { return 0; }
+	virtual int32_t	reservedFunc6() { return 0; }
+	virtual int32_t	reservedFunc7() { return 0; }
+	virtual int32_t	reservedFunc8() { return 0; }
+	virtual int32_t	reservedFunc9() { return 0; }
+	virtual int32_t	reservedFunc10() { return 0; }
+	virtual int32_t	reservedFunc11() { return 0; }
+	virtual int32_t	reservedFunc12() { return 0; }
+	virtual int32_t	reservedFunc13() { return 0; }
+	virtual int32_t	reservedFunc14() { return 0; }
+	virtual int32_t	reservedFunc15() { return 0; }
+	virtual int32_t	reservedFunc16() { return 0; }
+	virtual int32_t	reservedFunc17() { return 0; }
+	virtual int32_t	reservedFunc18() { return 0; }
+	virtual int32_t	reservedFunc19() { return 0; }
+	virtual int32_t	reservedFunc20() { return 0; }
 
-	int				reserved[400];
+	int32_t			reserved[400];
 
 };
 

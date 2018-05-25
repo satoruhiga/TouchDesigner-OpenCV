@@ -2,18 +2,24 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="src">
-      <UniqueIdentifier>{0f912659-0773-4b77-b6d9-5fa752f290e4}</UniqueIdentifier>
+      <UniqueIdentifier>{8cc81029-d3b3-4cbe-89a3-579f272641bd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\NanomsgIO">
+      <UniqueIdentifier>{dff0a9ae-2573-46a3-97cb-353a75740547}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\CPlusPlus_Common.h">
       <Filter>src</Filter>
     </ClInclude>
+    <ClInclude Include="src\GL_Extensions.h">
+      <Filter>src</Filter>
+    </ClInclude>
     <ClInclude Include="src\TOP_CPlusPlusBase.h">
       <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="src\GL_Extensions.h">
-      <Filter>src</Filter>
+    <ClInclude Include="src\NanomsgIO\NanomsgIO.h">
+      <Filter>src\NanomsgIO</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
