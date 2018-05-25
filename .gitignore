@@ -7,3 +7,5 @@ python/nnpy/__pycache__/
 dll/CPUMemoryTOP/Debug/
 dll/CPUMemoryTOP/Release/
 test.*.toe
+dll/NanomsgTOP/Debug/
+dll/NanomsgTOP/.vs/
