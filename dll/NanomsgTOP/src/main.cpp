@@ -17,14 +17,14 @@
 
 #include "NanomsgIO/NanomsgIO.h"
 
-class CPUMemoryTOP : public TOP_CPlusPlusBase
+class NanomsgTOP : public TOP_CPlusPlusBase
 {
 public:
 
 	std::shared_ptr<NanomsgIO::Publisher> pub;
 	std::string nanomsg_addr;
 
-	CPUMemoryTOP(const OP_NodeInfo *info)
+	NanomsgTOP(const OP_NodeInfo *info)
 	{}
 
 	void setupParameters(OP_ParameterManager* manager) override
@@ -117,7 +117,7 @@ CreateTOPInstance(const OP_NodeInfo* info, TOP_Context* context)
 {
 	// Return a new instance of your class every time this is called.
 	// It will be called once per TOP that is using the .dll
-	return new CPUMemoryTOP(info);
+	return new NanomsgTOP(info);
 }
 
 DLLEXPORT
@@ -127,7 +127,7 @@ DestroyTOPInstance(TOP_CPlusPlusBase* instance, TOP_Context *context)
 	// Delete the instance here, this will be called when
 	// Touch is shutting down, when the TOP using that instance is deleted, or
 	// if the TOP loads a different DLL
-	delete (CPUMemoryTOP*)instance;
+	delete (NanomsgTOP*)instance;
 }
 
 };
